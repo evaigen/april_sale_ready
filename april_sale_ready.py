@@ -98,6 +98,11 @@ def convert_to_xlsx(april_path, invoice_name):
 def april_upd(april_workbook, april_worksheet, euro_rate, dollar_rate):
     total_rows = april_worksheet.max_row
     code_name = str(april_worksheet['K16'].value).lower()
+
+    if code_name == '' or code_name == ' ':
+        code_name = str(april_worksheet['J12'].value)[7:].lower()
+        print(code_name)
+
     currency_type = str(april_worksheet['J15'].value).lower()
     last_flower = 0
     start = 16
@@ -110,6 +115,10 @@ def april_upd(april_workbook, april_worksheet, euro_rate, dollar_rate):
             customer = info[0]
             customer_code = code
             break
+
+    if not customer_code:
+        print("Couldn't identify marking!")
+        exit()
 
     column_name = {
         'B15': '', 'C15': 'ТИП', 'D15': 'КОЛ-ВО КОРОБОК',
@@ -143,13 +152,23 @@ def april_upd(april_workbook, april_worksheet, euro_rate, dollar_rate):
                 flower_sum[2] = float(april_worksheet[f'J{row+1}'].value)
 
             else:
-                print("Total row wasn't found!")
-                exit()
+                print("Handling row wasn't found!")
 
-            if 'GRAND TOTAL' in str(april_worksheet[f'B{row+2}'].value):
+                if 'GRAND TOTAL' in str(april_worksheet[f'B{row+1}'].value):
+                    flower_sum[0] = float(april_worksheet[f'J{row+1}'].value)
+
+                else:
+                    print("Total row wasn't found!")
+                    exit()
+
+            if (
+                'GRAND TOTAL' in str(april_worksheet[f'B{row+2}'].value)
+                and
+                flower_sum[0] == 0.0
+            ):
                 flower_sum[0] = float(april_worksheet[f'J{row+2}'].value)
 
-            else:
+            if flower_sum[0] == 0.0:
                 print("Total row wasn't found!")
                 exit()
 
