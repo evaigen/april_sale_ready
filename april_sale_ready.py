@@ -3,6 +3,7 @@ from lxml import etree
 from openpyxl import load_workbook
 from openpyxl.styles.colors import WHITE, RGB
 import warnings
+import pandas as pd
 
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -14,7 +15,8 @@ __old_rgb_set__ = RGB.__set__
 april_codes = {
     'ufarm': ['Зикрач Армавир', 1, 4.0, 1.02],
     'volg': ['Копач', 1, 4.0, 1.02],
-    'ufamsk': ['Виталий Москва', 1.05, 4.0, 1]
+    'ufamsk': ['Виталий Москва', 1.05, 4.0, 1],
+    'roxy': ['Олег Инна Флора', 1, 4.0, 1.02]
 }
 
 # XPath expression to extract the currency rate
@@ -76,6 +78,21 @@ def load_invoice(april_path):
         exit()
 
     return april_workbook, april_worksheet
+
+
+def convert_to_xlsx(april_path, invoice_name):
+    try:
+        data = pd.read_excel(april_path)
+        xlsx_file = f'{invoice_name}.xlsx'
+        data.to_excel(xlsx_file, index=False)
+
+        print(f"Converted {april_path} to {xlsx_file}.")
+
+    except Exception as e:
+        print(f"Error has occured: {e}")
+        exit()
+
+    return xlsx_file
 
 
 def april_upd(april_workbook, april_worksheet, euro_rate, dollar_rate):
@@ -187,7 +204,8 @@ def april_upd(april_workbook, april_worksheet, euro_rate, dollar_rate):
 
 def start():
     invoice_name = input('Name of the invoice:\n')
-    april_path = f'{invoice_name}.xlsx'
+    april_path = f'{invoice_name}.xls'
+    april_path = convert_to_xlsx(april_path, invoice_name)
     april_workbook, april_worksheet = load_invoice(april_path)
     euro_rate, dollar_rate = parsing_currency()
     april_upd(april_workbook, april_worksheet, euro_rate, dollar_rate)
